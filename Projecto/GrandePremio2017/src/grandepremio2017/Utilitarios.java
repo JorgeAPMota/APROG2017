@@ -22,11 +22,25 @@ public class Utilitarios {
 
 //    public static int calcVelocMedia(){
 //        
-//    }
-    public static int calcIdadeAutomovel() {
-        int idadeAutomovel = 0;
-
-        return idadeAutomovel;
+//    
+    
+     /**
+    * @return Calcula a idade mediante data nascimento
+    **/
+    
+    public static int calcIdade(String data, String hoje) {
+        String dataNasimento[] = data.split("/");
+        String dataHoje[] = hoje.split("/");
+        
+        int idade = Integer.parseInt(dataHoje[2]) - Integer.parseInt(dataNasimento[2]) -1;
+        
+        if(( Integer.parseInt(dataHoje[1]) >=  Integer.parseInt(dataNasimento[1]) )
+                && 
+            ( Integer.parseInt(dataHoje[0]) >=  Integer.parseInt(dataNasimento[0]) ) ) {
+            
+            idade++;
+        }
+        return idade;
     }
 
     //- Todos os participantes que terminam uma prova têm um prémio calculado pela fórmula: 
@@ -48,22 +62,30 @@ public class Utilitarios {
         return premio;
     }
 
-    public static int converterddmmaaaaParaaaammdd(){
-        
+    /**
+     * Verifica se um determinado nome contem apelido
+     *
+     * @param nome
+     * @param apelido
+     * @return
+     */
+    public static boolean verificaSeTemApelido(String nome, String apelido) {
+    // String implements CharSequence
+        return nome.contains(apelido);
     }
-    
-    public static String verificaSeTemApelido() {
 
+    /**
+     * Converte data no formato dd/mm/ano em aaaammdd
+     *
+     * @param data data no formato dd/mm/ano
+     * @return data no formato aaaammdd
+     */
+    public static String converterddmmaaaaParaaaammdd(String data) {
+        String[] aux = data.trim().split("/");
+        String dia = aux[0].length() < 2 ? "0" + aux[0] : aux[0];
+        String mes = aux[1].length() < 2 ? "0" + aux[1] : aux[1];
+        return aux[2] + mes + dia;
     }
 
-    public static int converterddmmaaaaParaaaammdd(String data){
-    
-        data = input.nextString();
-        
-        
-        System.out.println("Data" + data);
-        return data;
-    }
-    
-    
+
 }
