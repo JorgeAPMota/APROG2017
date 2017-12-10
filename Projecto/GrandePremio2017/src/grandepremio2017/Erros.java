@@ -32,7 +32,7 @@ public class Erros {
         }
     }
 
-    public static void erroAssociados(String erro) throws IOException {
+    public static void erroSocios(String erro) throws IOException {
         BufferedWriter bw = new BufferedWriter(new FileWriter(erros[0], true));
         bw.write(erro + "\n");
         bw.close();

@@ -8,7 +8,9 @@ package grandepremio2017;
 import static grandepremio2017.Utilitarios.input;
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.io.FileReader;
 import java.io.FileWriter;
+import java.io.IOException;
 import java.util.Formatter;
 import java.util.Scanner;
 
@@ -22,38 +24,66 @@ public class GrandePremio2017 {
     private final static Scanner input = new Scanner(System.in);
     private final static Formatter output = new Formatter(System.out);
 
-    private static int acrescentaElementosFichPrevio() throws Exception {
-        FileWriter f2 = new FileWriter(Configuracoes.FICHEIRO_BACKUP), true);
-        f2.write("Nova linha");
-        f2.write("The end\n");
-        f2.close();
+//    private static int acrescentaElementosFichPrevio() throws Exception {
+//        FileWriter f2 = new FileWriter(Configuracoes.FICHEIRO_BACKUP), true);
+//        f2.write("Nova linha");
+//        f2.write("The end\n");
+//        f2.close();
+//
+//        return nParticipantes;
+//    }
+    /**
+     * Método que acede à informação de uma linha do ficheiro e guarda-a na
+     * estrutura dados se ainda não existe linha com aquele valor no 1º elemento, isto para participantes
+     *
+     * @param linha - String com o conteúdo de uma linha do ficheiro
+     * @param participantes - matriz de strings com a informação lida do
+     * ficheiro
+     * @param nParticipantes - número de elementos existentes na matriz
+     * @return - o novo número de elementos da matriz
+     */
+    private static int guardarDados(String linha, String[][] participantes, int nParticipantes) {
+        String[] temp = linha.split(Configuracoes.SEPARADOR_DADOS_FICH);
+        if (temp.length == Configuracoes.N_DADOS_SOCIO) {
+            String num = temp[0].trim();
+            int pos = pesquisarElemento(num, nParticipantes, participantes);
+            if (pos == -1) {
+                participantes[nParticipantes][0] = num;
+                participantes[nParticipantes][1] = temp[1].trim();
+                participantes[nParticipantes][2] = temp[2].trim();
+                participantes[nParticipantes][3] = temp[3].trim();
+                nParticipantes++;
+            }
+        }
+        return nParticipantes;
     }
 
     /**
      * Método que acede à informação de uma linha do ficheiro e guarda-a na
-     * estrutura dados se ainda não existe linha com aquele valor no 1º elemento
+     * estrutura dados se ainda não existe linha com aquele valor no 1º elemento, isto para participantes
      *
      * @param linha - String com o conteúdo de uma linha do ficheiro
-     * @param info - matriz de strings com a informação lida do ficheiro
-     * @param nElems - número de elementos existentes na matriz
+     * @param participantes - matriz de strings com a informação lida do
+     * ficheiro
+     * @param nParticipantes - número de elementos existentes na matriz
      * @return - o novo número de elementos da matriz
      */
-    private static int guardarDados(String linha, String[][] info, int nElems) {
-        String[] temp = linha.split(Configuracoes.SEPARADOR_DADOS_FICH);
-        if (temp.length == Configuracoes.N_CAMPOS_INFO) {
+    private static int guardarDadosProvas(String linha, String[][] provas, int nProvas) {
+        String[] temp = linha.split(Configuracoes.SEPARADOR_DADOS_FICH_PROVAS);
+        if (temp.length == Configuracoes.N_DADOS_PROVAS) {
             String num = temp[0].trim();
-            int pos = pesquisarElemento(num, nElems, info);
+            int pos = pesquisarElemento(num, nProvas, provas);
             if (pos == -1) {
-                info[nElems][0] = num;
-                info[nElems][1] = temp[1].trim();
-                info[nElems][2] = temp[2].trim();
-                info[nElems][3] = temp[3].trim();
-                nElems++;
+                provas[nProvas][0] = num;
+                provas[nProvas][1] = temp[1].trim();
+
+                nProvas++;
             }
         }
-        return nElems;
+        return nProvas;
     }
-
+    
+    
     /**
      * Pesquisar linha de matriz por primeiro elemento da linha
      *
@@ -98,35 +128,83 @@ public class GrandePremio2017 {
      * Carrega informação do ficheiro de texto para memória
      *     
 * @param nomeFich - nome do ficheiro que contem a informação a guardar
-     * @param info - matriz de strings para guardar a info do ficheiro
-     * @param nElems - número de elementos já existentes na matriz
+     * @param participantes - matriz de strings para guardar a info do ficheiro
+     * @param nParticipantes - número de elementos já existentes na matriz
      * @return o número final de elementos na matriz
      * @throws FileNotFoundException
      */
-    public static int lerInfoFicheiroParaMemoria(String nomeFich, String[][] info, int nElems) throws FileNotFoundException {
-        nomeFich = Configuracoes.FICHEIRO_BACKUP;
-        Scanner fInput = new Scanner(new File(Configuracoes.FICHEIRO_BACKUP));
-        while (fInput.hasNext() && nElems < Configuracoes.MAX_PARTICIPANTES) {
-            String linha = fInput.nextLine();
-            // Verifica se linha não está em branco
-            if (linha.trim().length() > 0) {
-                nElems = guardarDados(linha, info, nElems);
+    public static int lerInfoFicheiroParaMemoria(String nomeFicheiro, String[][] participantes, int nParticipantes, int posicao) throws IOException {
+        Scanner fileIO = new Scanner(new FileReader(nomeFicheiro));
+        while (fileIO.hasNextLine() && nParticipantes < Configuracoes.MAX_PARTICIPANTES && posicao < Configuracoes.MAX_PARTICIPANTES) {
+            String linha = fileIO.nextLine();
+            int nCamposSocio = Configuracoes.N_DADOS_SOCIO;
+            if (Utilitarios.validacao(linha, nCamposSocio, participantes, posicao)) {
+                String dados[] = linha.split(";");
+
+                participantes[posicao][0] = dados[0].trim();
+                participantes[posicao][1] = dados[1].trim();
+                participantes[posicao][2] = dados[2].trim();
+                participantes[posicao][3] = dados[3].trim();
+
+//                Utilitarios.iniciaProvas(provas, nParticipantes);
+                nParticipantes = guardarDados(linha, participantes, nParticipantes);
+                nParticipantes++;
             }
         }
-        fInput.close();
-        return nElems;
+        fileIO.close();
+        return posicao;
+    }
+
+    /**
+     * Carrega informação do ficheiro de texto de provas para memória
+     *     
+* @param nomeFich - nome do ficheiro que contem a informação a guardar
+     * @param participantes - matriz de strings para guardar a info do ficheiro
+     * @param nParticipantes - número de elementos já existentes na matriz
+     * @return o número final de elementos na matriz
+     * @throws FileNotFoundException
+     */
+    public static int lerFicheiroProvasParaMemoria(String nomeFicheiroProvas, String[][] provas, int nProvas, int posicao) throws IOException {
+
+        Scanner fileIO = new Scanner(new FileReader(nomeFicheiroProvas));
+        while (fileIO.hasNextLine() && posicao < Configuracoes.MAX_PROVAS) {
+            String linha = fileIO.nextLine();
+            int nCamposSocio = Configuracoes.N_DADOS_PROVAS;
+            String dados[] = linha.split(";");
+
+            provas[posicao][0] = dados[0].trim();
+            provas[posicao][1] = dados[1].trim();
+
+            nProvas++;
+        }
+
+        fileIO.close();
+        return posicao;
+    }
+
+    /**
+     * Verifica se é ficheiro válido/consegue ler
+     * @param nomeFile
+     * @return 
+     */
+    public static boolean isFile(String nomeFile) {
+        File ficheiro = new File(nomeFile);
+        if (ficheiro.isFile() && ficheiro.canRead()) {
+            return true;
+        }
+        return false;
     }
 
     /**
      * Visualizar toda a informação (paginada)dos participantes existente em
      * memória
      *
-     * @param matriz- matriz com a informação a listar
-     * @param nEl – nº de linhas com informação
+     * @param participantes- matriz com a informação a listar
+     * @param nParticipantes – nº de linhas com informação
      */
-    private static void listagemPaginada(String[][] matriz, int nEl) {
+    private static void listagemPaginada(String[][] participantes, int nParticipantes) {
         int contPaginas = 0;
-        for (int i = 0; i < nEl; i++) {
+        for (int i = 0; i < nParticipantes; i++) {
             if (i % Configuracoes.MAX_LINHAS_PAGINA == 0) {
                 if (contPaginas > 0) {
                     pausa();
@@ -135,11 +213,11 @@ public class GrandePremio2017 {
                 System.out.println("\nPÁGINA: " + contPaginas);
                 cabecalho();
             }
-            for (int j = 0; j < Configuracoes.N_CAMPOS_INFO; j++) {
+            for (int j = 0; j < Configuracoes.N_DADOS_SOCIO; j++) {
                 if (j == 1) {
-                    System.out.printf("%30s", matriz[i][j]);
+                    System.out.printf("%30s", participantes[i][j]);
                 } else {
-                    System.out.printf("%10s", matriz[i][j]);
+                    System.out.printf("%10s", participantes[i][j]);
                 }
             }
             System.out.println("");
@@ -160,16 +238,16 @@ public class GrandePremio2017 {
     /**
      * Atualiza informação alterável de um participante
      *
-     * @param nSocio - Nº sócio
+     * @param nParticipante - Nº sócio/participante
      * @param matriz com toda a informação dos sócios
      * @param nSocios - número de sócios
      * @return false se o sócio não foi encontrado ou true se foi encontrado e
      * atualizado
      */
-    public static boolean actualizarInfoParticipante(String nSocio,
+    public static boolean actualizarInfoParticipante(String nParticipantes,
             String[][] matriz, int nElems) {
         int pos;
-        if ((pos = pesquisarElemento(nSocio, nElems, matriz)) > -1) {
+        if ((pos = pesquisarElemento(nParticipantes, nElems, matriz)) > -1) {
             int op;
             do {
                 mostrarParticipante(output, matriz[pos]);
@@ -197,7 +275,7 @@ public class GrandePremio2017 {
             } while (op != 0);
             return true;
         }
-        System.out.printf("O participante %s não foi encontrado!", nSocio);
+        System.out.printf("O participante %s não foi encontrado!", matriz[pos][1]);
         return false;
     }
 
@@ -224,11 +302,11 @@ public class GrandePremio2017 {
      * Mostrar a informação de um participante separada por ;
      *
      * @param out - instancia de formatter associado ao stream pretendido
-     * @param socio - array de Strings com a informação do atleta
+     * @param socio - array de Strings com a informação do socio
      */
     private static void mostrarParticipante(Formatter out,
             String[] participante) {
-        for (int j = 0; j < Configuracoes.N_CAMPOS_INFO; j++) {
+        for (int j = 0; j < Configuracoes.N_DADOS_SOCIO; j++) {
             if (j == 1) {
                 out.format("%30s;", participante[j]);
             } else {
@@ -237,34 +315,28 @@ public class GrandePremio2017 {
         }
     }
 
-    /**
-     * Construção do Menu
-     *
-     * @return
-     */
-    private static int menu() {
-        String texto = "\nMENU:"
-                + "\n Ler … … 1"
-                + "\n … 2"
-                //…
-                + "\n FIM … 0"
-                + "\nQual a sua opção?";
-        System.out.printf("%n%s%n", texto);
-        int op = input.nextInt();
-        input.nextLine();
-        return op;
-    }
-
+    
     /**
      * Método main que corre o programa
      *
      * @param args the command line arguments
      */
     public static void main(String[] args) throws FileNotFoundException, IOException {
-        String[][] participantes = new String[Configuracoes.MAX_PARTICIPANTES][Configuracoes.N_CAMPOS_INFO];
-        int[][] provas = new int[Configuracoes.MAX_PROVAS];
+
+        String participantes[][] = new String[Configuracoes.MAX_PARTICIPANTES][Configuracoes.N_DADOS_SOCIO];
+        String provas[][] = new String[Configuracoes.MAX_PROVAS][Configuracoes.N_DADOS_PROVAS];
+        int nParticipantes = 0;
+        int[][] tempos = new int[0][0];
+        double[][] prémios = new double[Configuracoes.MAX_PARTICIPANTES][Configuracoes.MAX_PROVAS];
+
+        String nSocio;
+        String nome;
+        String marca;
+        String dataConstrucao;
+
         int posicao = 0;
-        int opcao = 0;
+        int paginacao = 0;
+        int opcao;
         String opcaoString = "";
 
         Erros.initialize();
@@ -273,20 +345,22 @@ public class GrandePremio2017 {
             System.out.print("\n========MENU========\n"
                     + "Escolha a opção que pretende:\n"
                     + "\t1 - Ler ficheiro com inscrições de sócios. (FILE: inscricoes.txt)\n"
-                    + "\t2 - Visualizar a informação dos sócios.\n"
-                    + "\t3 - Atualizar a informação de um sócio.\n"
-                    + "\t4 - Ler ficheiro com informação de inscrições. (FILE: prova1_inscricoes.txt)\n"
-                    + "\t5 - Ler ficheiro com informação de tempos.\n"
-                    + "\t6 - Listagem para ecrã/ficheiro da informação.\n"
-                    + "\t7 - Remover um sócio e toda a sua informação.\n"
-                    + "\t8 - Melhores e piores tempos por prova.\n"
-                    + "\t9 - Percentagem dos socios femininos em prova.\n"
-                    + "\t10 - Listagem de tempos em ficheiro.\n\n"
-                    + "\t0 - Terminar. \n");
+                    + "\t2 - Visualizar a informação dos sócios já inscritos em ecrã.\n"
+                    + "\t3 - Alterar, em memória, qualquer informação do participante, com exceção do número de sócio.\n"
+                    + "\t4 - Ler ficheiro com informação de todas as provas. (FILE: prova1_inscricoes.txt)\n"
+                    + "\t5 - Ler um ficheiro de texto cujo nome é o nome da prova contendo os tempos realizados pelos participantes nessa prova.\n"
+                    + "\t6 - Calcular e guardar em memória os prémios atribuídos aos participantes numa determinada prova.\n"
+                    + "\t7 - Guardar num ficheiro de texto Backup.txt, toda a informação existente em memória, isto é a informação das provas, a informação dos participantes e respetivos tempos.\n"
+                    + "\t8 - Remover das estruturas de dados toda a informação relativa a um participante.\n"
+                    + "\t9 - Inserir, se possível, informação dum novo participante. A informação será introduzida via teclado.\n"
+                    + "\t10 - Visualizar no ecrã, para um determinado participante, a velocidade média em cada uma das provas em que participou e para cada uma delas a velocidade média do participante mais rápido e a do participante mais lento.\n"
+                    + "\t11 - A média das velocidades médias da prova bem como a velocidade média do participante mais rápido.\n"
+                    + "\t12 - O valor total de prémios atribuídos nessa prova.\n"
+                    + "\t14 - Criar um ficheiro de texto de nome GrandePremio.txt com a informação dos participantes e prémio total recebido, por ordem decrescente do valor do prémio. \n");
 
-            opcaoString = scan.nextLine();
+            opcaoString = input.nextLine();
 
-            if (utilitarios.isNumber(opcaoString)) {
+            if (Utilitarios.isNumber(opcaoString)) {
                 opcao = Integer.parseInt(opcaoString);
             } else {
                 opcao = -1;
@@ -295,93 +369,49 @@ public class GrandePremio2017 {
             switch (opcao) {
                 case 1:
                     System.out.println("Insira o nome do ficheiro a inserir:");
-                    String fileSocios = scan.nextLine();
+                    String nomeFicheiro = input.nextLine();
 
-                    if (isFile(fileSocios)) {
+                    if (isFile(nomeFicheiro)) {
                         //envia matriz para guardar a info do fich, return numSocios 
-                        posicao = inserirInscricoes(participantes, provas, posicao, fileSocios);
+                        posicao = lerInfoFicheiroParaMemoria(nomeFicheiro, participantes, nParticipantes, posicao);
                     } else {
                         System.out.println("O ficheiro nao existe");
                     }
-
                     break;
                 case 2:
-                    //print(tabela,numSocios); //envia matriz para fazer o print ??? printar só os 4 prim campos ou tudo?
                     if (posicao > 0) {
-                        utilitarios.listarPaginado(participantes, posicao, paginacao);
+                        listagemPaginada(participantes, nParticipantes);
                     } else {
                         System.out.println("(i) Deve escolher a opcao 1 antes de listar conteudos");
                     }
                     break;
                 case 3:
-                    //atualizarSocio(tabela,numSocios); //envia matriz para atualizar
-                    System.out.println("Insira o nif do socio para o qual pretende alterar dados");
-                    String nifActualizar = scan.nextLine();
-                    System.out.println("\n -- " + utilitarios.alterarDados(participantes, nifActualizar, posicao) + " -- \n");
+                    System.out.println("Insira o nr de socio do participante para o qual pretende alterar dados");
+                    nSocio = input.nextLine();
+                    System.out.println("\n -- " + Utilitarios.alterarDados(participantes, nSocio, posicao) + " -- \n");
                     break;
                 case 4:
-                    //lerInscricoes(tabela,numSocios); //envia matriz para passar a info do ficheiro
-                    System.out.println("Insira o nome do ficheiro de inscricoes a inserir:");
-                    String fileInscricoes = scan.nextLine();
-                    int provaInscrever = pedeProva();
-                    if (isFile(fileInscricoes)) {
-                        inscricoes(participantes, provas, posicao, fileInscricoes, provaInscrever);
+                    System.out.println("Insira o nome do ficheiro de provas a inserir: (FILE: provas.txt)");
+                    String nomeFicheiroProvas = input.nextLine();
+
+                    if (isFile(nomeFicheiroProvas)) {
+                    int nProvas = 0;
+                        posicao = lerFicheiroProvasParaMemoria(nomeFicheiroProvas, provas, nProvas, posicao);
                     } else {
                         System.out.println("O ficheiro nao existe");
                     }
                     break;
                 case 5:
-                    //lerTempos(tabela,numSocios);
-                    int provaTempos = pedeProva();
-                    if (utilitarios.inscricaoValida(provas, provaTempos, posicao)) {
-                        String fileTempos = templateFileTempos + provaTempos + ".txt";
-                        if (isFile(fileTempos)) {
-                            inserirTempos(participantes, provas, posicao, fileTempos, provaTempos);
-                        } else {
-                            System.out.println("O ficheiro nao existe");
-                        }
-
-                    } else {
-                        System.out.println("Precisa de inscrever todos os atletas antes de importar os tempos\n");
-                    }
-
+                    System.out.println("Unsuported opperation");
                     break;
                 case 6:
-                    //printOuGuardar(Megatabela,numSocios);
-
-                    String tipoVisual = "";
-                    do {
-                        System.out.println("\n----\nDeseja ver a info de que modo:\n\t-(E)cra\n\t-(F)icheiro");
-                        tipoVisual = scan.nextLine();
-                    } while (!(tipoVisual.equalsIgnoreCase("f") || tipoVisual.equalsIgnoreCase("e")));
-
-                    //ordenar 
-                    utilitarios.ordenarArr(participantes, provas, posicao);
-
-                    utilitarios.listarElementos(participantes, provas, posicao, tipoVisual);
-
                     break;
                 case 7:
-                    //numSocios=removerSocio(tabela,numSocios);//atualiza o numSocios   
-                    System.out.println("Insira o nif do socio para o qual pretende alterar dados");
-                    String nifRemover = scan.nextLine();
-                    if (utilitarios.removerSocio(participantes, nifRemover, posicao)) {
-                        posicao--;
-                    }
                     break;
                 case 8:
-                    //melhoresPiores(tabela,numSocios);//calcula media dos tempos e mostra top e bottom
-                    int estProva = pedeProva();
-                    System.out.println("--TEMPO MEDIO-- \n" + utilitarios.tempoMedio(provas, posicao, estProva));
-                    utilitarios.melhoresPiores(provas, posicao, estProva);
-                    break;
-                case 9:
-                    //estatisticas(tabela,numSocios); //% incr --> %mulheres E após a prova %inscr que Desist ou Faltaram
-                    utilitarios.percInscritos(participantes, provas, posicao);
-                    break;
-                case 10:
-                    //guardarInfo(tabela, numSocios);//criar ficheiro Runers2016 com toda a info
-                    utilitarios.guardarInfo(participantes, provas, posicao, hoje, numCamposReport);
+                    System.out.println("Insira o nr de socio do participante a remover");
+                    nSocio = input.nextLine();
+                    Utilitarios.removerParticipante(participantes, nSocio, posicao);
                     break;
                 case 0:
                     break;
@@ -392,7 +422,7 @@ public class GrandePremio2017 {
             //menu de pausa
             if (opcao != 0) {
                 System.out.println("\nPressione -ENTER- para voltar ao menu");
-                scan.nextLine();
+                input.nextLine();
             }
         } while (opcao != 0);
 

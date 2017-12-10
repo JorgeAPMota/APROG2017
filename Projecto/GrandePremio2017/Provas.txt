@@ -1,0 +1,7 @@
+Rota dos Castelos: 150Km; 
+Rota das Pousadas:170Km;
+Rota dos Lagos: 160Km; 
+Rota dos Aldeias: 220Km; 
+Rota dos Rios: 200Km
+Rota do Românico: 30Km;
+Rota dos Queijos: 55Km;

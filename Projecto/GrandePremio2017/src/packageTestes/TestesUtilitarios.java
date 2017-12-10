@@ -32,15 +32,15 @@ public class TestesUtilitarios {
         System.out.println("Saída obtida: " + Utilitarios.converterddmmaaaaParaaaammdd("2/5/2010") + "\n\n");
 
         System.out.println("\n\nTestes associados ao método idade()”+ “a serem executados antes de 25 de Dezembro 2017");
-        System.out.println("Valor de Entrada: data de nascimento” + “no formato aaaammdd e Saída Esperada: idade \n");
+        System.out.println("Valor de Entrada: data de construcao” + “no formato aaaammdd e Saída Esperada: idade \n");
         System.out.println("Valor de Entrada:19901225 Saída Esperada: 26 ");
-        System.out.println("Saída obtida: " + Utilitarios.calcIdade("19901225") + "\n\n");
-        System.out.println("Valor de Entrada:19801130 Saída Esperada: 36 ");
-        System.out.println("Saída obtida: " + Utilitarios.calcIdade("19801225") + "\n\n");
-        System.out.println("Valor de Entrada:20001105 Saída Esperada: 17");
-        System.out.println("Saída obtida: " + Utilitarios.calcIdade("20001005") + "\n\n");
-        System.out.println("Valor de Entrada:20001105 Saída Esperada: 17");
-        System.out.println("Saída obtida: " + Utilitarios.calcIdade("20001025") + "\n\n");
+        System.out.println("Saída obtida: " + Utilitarios.calcIdade("25/12/1990") + "\n\n");
+        System.out.println("Valor de Entrada:25/12/1990 Saída Esperada: 36 ");
+        System.out.println("Saída obtida: " + Utilitarios.calcIdade("1980/12/25") + "\n\n");
+        System.out.println("Valor de Entrada:2000/11/05 Saída Esperada: 17");
+        System.out.println("Saída obtida: " + Utilitarios.calcIdade("2000/10/05") + "\n\n");
+        System.out.println("Valor de Entrada:2000/11/05 Saída Esperada: 17");
+        System.out.println("Saída obtida: " + Utilitarios.calcIdade("2000/10/25") + "\n\n");
     }
 
 }
